@@ -2,15 +2,18 @@
 
 namespace RsfRbrPowerSteering.ViewModel.Commands;
 
-internal class ApplyScalingCommand(
-    ICommandManager commandManager,
-    IMessageService messageService,
-    MainViewModel mainViewModel)
-    : ExclusiveAsyncCommandBase(
-        commandManager,
-        mainViewModel)
+internal class ApplyScalingCommand : ExclusiveAsyncCommandBase
 {
-    private readonly IMessageService _messageService = messageService;
+    private readonly IMessageService _messageService;
+
+    public ApplyScalingCommand(
+        ICommandManager commandManager,
+        IMessageService messageService,
+        MainViewModel mainViewModel)
+        : base(commandManager, mainViewModel)
+    {
+        _messageService = messageService;
+    }
 
     public override bool CanExecute(object? parameter)
     {
