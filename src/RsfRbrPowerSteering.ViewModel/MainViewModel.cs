@@ -220,14 +220,10 @@ public class MainViewModel : NotifyPropertyChangedBase
             // Set sensitivities:
             carViewModel.FfbSensPersonal.ApplyFfbSens(ffbSens);
 
-            if (PrimaryTemplate.SelectedCarId == carId)
+            if (ReferenceTemplates.Any(t => t.SelectedCarId == carId))
             {
-                PrimaryTemplate.ApplyFfbSens(ffbSens);
-            }
-
-            if (SecondaryTemplate.SelectedCarId == carId)
-            {
-                SecondaryTemplate.ApplyFfbSens(ffbSens);
+                var template = ReferenceTemplates.First(t => t.SelectedCarId == carId);
+                template.ApplyFfbSens(ffbSens);
             }
 
             carIds.Add(carId);
