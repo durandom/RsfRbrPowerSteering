@@ -353,11 +353,20 @@ public class MainViewModel : NotifyPropertyChangedBase
             Adjustments.Fwd = settings.AdjustmentFwd;
             Adjustments.Rwd = settings.AdjustmentRwd;
             Adjustments.Awd = settings.AdjustmentAwd;
-            // Apply settings to existing templates
-            if (ReferenceTemplates.Count > 0)
-                ReferenceTemplates[0].ApplySettings(settings.PrimaryCar);
-            if (ReferenceTemplates.Count > 1)
-                ReferenceTemplates[1].ApplySettings(settings.SecondaryCar);
+            // Clear existing templates and load from settings
+            ReferenceTemplates.Clear();
+            foreach (var carSettings in settings.ReferenceCarSettings)
+            {
+                var template = new CarTemplateViewModel(this);
+                template.ApplySettings(carSettings);
+                ReferenceTemplates.Add(template);
+            }
+            
+            // Ensure at least one reference car exists
+            if (ReferenceTemplates.Count == 0)
+            {
+                AddReferenceCar();
+            }
             _isReCalcuationEnabled = true;
             ReCalculate();
         }
@@ -365,22 +374,21 @@ public class MainViewModel : NotifyPropertyChangedBase
 
     internal async Task SaveSettingsAsync()
     {
-        await new RootSettings
-            {
-                IsDescriptionVisible = IsDescriptionVisible,
-                TargetCarId = TargetCar?.Id,
-                PrimaryCar = PrimaryTemplate.ToSettings(),
-                SecondaryCar = SecondaryTemplate.ToSettings(),
-                PrimarySurface = Adjustments.PrimarySurface?.ToString() ?? string.Empty,
-                AdjustmentWeightRatio = Adjustments.WeightRatio,
-                AdjustmentGravel = Adjustments.Gravel,
-                AdjustmentTarmac = Adjustments.Tarmac,
-                AdjustmentSnow = Adjustments.Snow,
-                AdjustmentFwd = Adjustments.Fwd,
-                AdjustmentRwd = Adjustments.Rwd,
-                AdjustmentAwd = Adjustments.Awd
-            }
-        .SaveAsync();
+        var settings = new RootSettings
+        {
+            IsDescriptionVisible = IsDescriptionVisible,
+            TargetCarId = TargetCar?.Id,
+            ReferenceCarSettings = ReferenceTemplates.Select(t => t.ToSettings()).ToList(),
+            PrimarySurface = Adjustments.PrimarySurface?.ToString() ?? string.Empty,
+            AdjustmentWeightRatio = Adjustments.WeightRatio,
+            AdjustmentGravel = Adjustments.Gravel,
+            AdjustmentTarmac = Adjustments.Tarmac,
+            AdjustmentSnow = Adjustments.Snow,
+            AdjustmentFwd = Adjustments.Fwd,
+            AdjustmentRwd = Adjustments.Rwd,
+            AdjustmentAwd = Adjustments.Awd
+        };
+        await settings.SaveAsync();
     }
 
     internal async Task ExportCarsAsync(FileInfo exportFile)
@@ -417,6 +425,21 @@ public class MainViewModel : NotifyPropertyChangedBase
         await LoadCarsAsync();
     }
 
+    internal void AddReferenceCar()
+    {
+        ReferenceTemplates.Add(new CarTemplateViewModel(this));
+        ReCalculate();
+    }
+
+    internal void RemoveReferenceCar(CarTemplateViewModel template)
+    {
+        if (ReferenceTemplates.Count > 1) // Keep at least one reference car
+        {
+            ReferenceTemplates.Remove(template);
+            ReCalculate();
+        }
+    }
+
     internal void ResetToDefaults()
     {
         _isReCalcuationEnabled = false;
@@ -425,8 +448,19 @@ public class MainViewModel : NotifyPropertyChangedBase
             ? [500, 1000]
             : carWeightsKg;
         Adjustments.ResetToDefaults();
-        PrimaryTemplate.ResetToDefaults(LockToLockRotations.FirstOrDefault()?.IntValue ?? 0, weightsKg.First());
-        SecondaryTemplate.ResetToDefaults(LockToLockRotations.LastOrDefault()?.IntValue ?? 0, weightsKg.Last());
+        
+        // Clear existing templates
+        ReferenceTemplates.Clear();
+        
+        // Add two default templates
+        var primaryTemplate = new CarTemplateViewModel(this);
+        primaryTemplate.ResetToDefaults(LockToLockRotations.FirstOrDefault()?.IntValue ?? 0, weightsKg.First());
+        ReferenceTemplates.Add(primaryTemplate);
+        
+        var secondaryTemplate = new CarTemplateViewModel(this);
+        secondaryTemplate.ResetToDefaults(LockToLockRotations.LastOrDefault()?.IntValue ?? 0, weightsKg.Last());
+        ReferenceTemplates.Add(secondaryTemplate);
+        
         _isReCalcuationEnabled = true;
         ReCalculate();
     }
