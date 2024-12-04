@@ -357,8 +357,11 @@ public class MainViewModel : NotifyPropertyChangedBase
             Adjustments.Fwd = settings.AdjustmentFwd;
             Adjustments.Rwd = settings.AdjustmentRwd;
             Adjustments.Awd = settings.AdjustmentAwd;
-            PrimaryTemplate.ApplySettings(settings.PrimaryCar);
-            SecondaryTemplate.ApplySettings(settings.SecondaryCar);
+            // Apply settings to existing templates
+            if (ReferenceTemplates.Count > 0)
+                ReferenceTemplates[0].ApplySettings(settings.PrimaryCar);
+            if (ReferenceTemplates.Count > 1)
+                ReferenceTemplates[1].ApplySettings(settings.SecondaryCar);
             _isReCalcuationEnabled = true;
             ReCalculate();
         }
