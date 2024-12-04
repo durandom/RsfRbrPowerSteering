@@ -12,7 +12,7 @@ public static class CalculationUtility
             {
                 _referencePoints = references
                     .Where(r => r.ffbSens.HasValue)
-                    .Select(r => (r.value, (decimal?)r.ffbSens.Value / r.drivetrainFactor))
+                    .Select(r => (r.value, (decimal?)(r.ffbSens.Value / r.drivetrainFactor)))
                     .OrderBy(p => p.value)
                     .ToList();
             }
