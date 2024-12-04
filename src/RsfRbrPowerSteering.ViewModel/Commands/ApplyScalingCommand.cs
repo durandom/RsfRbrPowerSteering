@@ -15,8 +15,8 @@ internal class ApplyScalingCommand(
     public override bool CanExecute(object? parameter)
     {
         return base.CanExecute(parameter)
-            && MainViewModel.PrimaryTemplate.FfbSensesHaveValue
-            && MainViewModel.SecondaryTemplate.FfbSensesHaveValue;
+            && MainViewModel.ReferenceTemplates.Count > 0
+            && MainViewModel.ReferenceTemplates.All(t => t.FfbSensesHaveValue);
     }
 
     protected override async Task ExecuteExclusiveAsync(object? parameter)
