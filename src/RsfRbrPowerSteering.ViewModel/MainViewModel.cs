@@ -181,6 +181,9 @@ public class MainViewModel : NotifyPropertyChangedBase
     public AdjustmentsViewModel Adjustments { get; }
     public ObservableCollection<CarTemplateViewModel> ReferenceTemplates { get; } = new();
 
+    public CarTemplateViewModel PrimaryTemplate => ReferenceTemplates[0];
+    public CarTemplateViewModel SecondaryTemplate => ReferenceTemplates[1];
+
     internal void ToggleDescriptionVisibility()
         => IsDescriptionVisible = !IsDescriptionVisible;
 
