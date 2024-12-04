@@ -10,6 +10,12 @@ public class ViewModelCommands
         IMessageService messageService,
         MainViewModel mainViewModel)
     {
+        AddReferenceCar = new AddReferenceCarCommand(
+            commandManager,
+            mainViewModel);
+        RemoveReferenceCar = new RemoveReferenceCarCommand(
+            commandManager,
+            mainViewModel);
         SetPrimarySurfaceNull = new SetPrimarySurfaceNullCommand(
             commandManager,
             mainViewModel);
@@ -55,4 +61,6 @@ public class ViewModelCommands
     public ICommand ResetToDefaults { get; }
     public ICommand ClearFfbSens { get; }
     public ICommand ToggleDescriptionVisibility { get; }
+    public ICommand AddReferenceCar { get; }
+    public ICommand RemoveReferenceCar { get; }
 }

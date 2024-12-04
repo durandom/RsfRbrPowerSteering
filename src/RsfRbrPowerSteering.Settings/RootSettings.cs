@@ -31,8 +31,7 @@ public class RootSettings
 
     public bool IsDescriptionVisible { get; set; }
     public int? TargetCarId { get; set; }
-    public CarSettings PrimaryCar { get; set; } = null!;
-    public CarSettings SecondaryCar { get; set;} = null!;
+    public List<CarSettings> ReferenceCarSettings { get; set; } = new();
     public string PrimarySurface { get; set; } = string.Empty;
     public int AdjustmentWeightRatio { get; set; }
     public int AdjustmentFwd { get; set; }
