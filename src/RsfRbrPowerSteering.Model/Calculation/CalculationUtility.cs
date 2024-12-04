@@ -44,18 +44,18 @@ public static class CalculationUtility
                 (car, drivetrainFactor: drivetrainFactors[car.Drivetrain])).ToList();
 
             ParametersLockToLockRotationGravel = new Parameters(
-                references.Select(r => (r.car.FfbSens.Gravel, (decimal)r.car.MaxSteeringLock, r.drivetrainFactor)));
+                references.Select(r => ((decimal?)r.car.FfbSens.Gravel, (decimal)r.car.MaxSteeringLock, r.drivetrainFactor)));
             ParametersLockToLockRotationTarmac = new Parameters(
-                references.Select(r => (r.car.FfbSens.Tarmac, (decimal)r.car.MaxSteeringLock, r.drivetrainFactor)));
+                references.Select(r => ((decimal?)r.car.FfbSens.Tarmac, (decimal)r.car.MaxSteeringLock, r.drivetrainFactor)));
             ParametersLockToLockRotationSnow = new Parameters(
-                references.Select(r => (r.car.FfbSens.Snow, (decimal)r.car.MaxSteeringLock, r.drivetrainFactor)));
+                references.Select(r => ((decimal?)r.car.FfbSens.Snow, (decimal)r.car.MaxSteeringLock, r.drivetrainFactor)));
             
             ParametersWeightKgGravel = new Parameters(
-                references.Select(r => (r.car.FfbSens.Gravel, (decimal)r.car.WeightKg, r.drivetrainFactor)));
+                references.Select(r => ((decimal?)r.car.FfbSens.Gravel, (decimal)r.car.WeightKg, r.drivetrainFactor)));
             ParametersWeightKgTarmac = new Parameters(
-                references.Select(r => (r.car.FfbSens.Tarmac, (decimal)r.car.WeightKg, r.drivetrainFactor)));
+                references.Select(r => ((decimal?)r.car.FfbSens.Tarmac, (decimal)r.car.WeightKg, r.drivetrainFactor)));
             ParametersWeightKgSnow = new Parameters(
-                references.Select(r => (r.car.FfbSens.Snow, (decimal)r.car.WeightKg, r.drivetrainFactor)));
+                references.Select(r => ((decimal?)r.car.FfbSens.Snow, (decimal)r.car.WeightKg, r.drivetrainFactor)));
         }
 
         private Parameters ParametersLockToLockRotationGravel { get; }
