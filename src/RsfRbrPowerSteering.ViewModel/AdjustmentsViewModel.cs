@@ -76,15 +76,19 @@ public class AdjustmentsViewModel : NotifyPropertyChangedBase
         {
             NotifyPropertyChanged(propertyNameSurface);
             NotifyPropertyChanged(propertyNameSurfaceOrNull);
-            _mainViewModel.PrimaryTemplate.UpdateFfbSensesHaveValue();
-            _mainViewModel.SecondaryTemplate.UpdateFfbSensesHaveValue();
+            foreach (var template in _mainViewModel.ReferenceTemplates)
+            {
+                template.UpdateFfbSensesHaveValue();
+            }
         }
     }
 
     private void CopyFfbSensToOtherSurfaces()
     {
-        _mainViewModel.PrimaryTemplate.CopyFfbSensToOtherSurfaces(_primarySurface);
-        _mainViewModel.SecondaryTemplate.CopyFfbSensToOtherSurfaces(_primarySurface);
+        foreach (var template in _mainViewModel.ReferenceTemplates)
+        {
+            template.CopyFfbSensToOtherSurfaces(_primarySurface);
+        }
     }
 
     private void SetPrimarySurface(SurfaceKind? surface)

@@ -402,8 +402,7 @@ public class MainViewModel : NotifyPropertyChangedBase
 
     internal async Task ApplyScalingAsync()
     {
-        int primaryCarId = PrimaryTemplate.SelectedCarId;
-        int secondaryCarId = SecondaryTemplate.SelectedCarId;
+        var selectedCarIds = ReferenceTemplates.Select(t => t.SelectedCarId).ToList();
         _carInfos = await CarInfo.ReadCarsAsync();
         IEnumerable<CarInfo> carInfos = TargetCar == null
             ? _carInfos.Values
@@ -413,8 +412,10 @@ public class MainViewModel : NotifyPropertyChangedBase
         _personalData.ApplyFfbSens(ffbSenses.Select(kvp => (kvp.Key, kvp.Value.ToPersonal())));
         _personalData.WriteFile();
         await LoadCarsAsync();
-        PrimaryTemplate.SelectedCarId = primaryCarId;
-        SecondaryTemplate.SelectedCarId = secondaryCarId;
+        for (int i = 0; i < Math.Min(selectedCarIds.Count, ReferenceTemplates.Count); i++)
+        {
+            ReferenceTemplates[i].SelectedCarId = selectedCarIds[i];
+        }
     }
 
     internal async Task ClearFfbSensAsync()
