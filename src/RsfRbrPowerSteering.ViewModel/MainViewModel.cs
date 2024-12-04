@@ -30,8 +30,9 @@ public class MainViewModel : NotifyPropertyChangedBase
             this);
         Cars.Add(DefaultCar);
         Adjustments = new AdjustmentsViewModel(this);
-        PrimaryTemplate = new CarTemplateViewModel(this);
-        SecondaryTemplate = new CarTemplateViewModel(this);
+        // Add initial two reference cars
+        ReferenceTemplates.Add(new CarTemplateViewModel(this));
+        ReferenceTemplates.Add(new CarTemplateViewModel(this));
         FfbSensRangeMessage = string.Format(ViewModelTexts.RangeMessageFormat, FfbSensMinimum, FfbSensMaximum);
         Version? version = Assembly.GetEntryAssembly()?.GetName()?.Version;
         WindowTitle = string.Format(
@@ -178,8 +179,7 @@ public class MainViewModel : NotifyPropertyChangedBase
     public ObservableCollection<CarViewModel> Cars { get; } = new ObservableCollection<CarViewModel>();
     public ObservableCollection<LockToLockRotationViewModel> LockToLockRotations { get; } = new ObservableCollection<LockToLockRotationViewModel>();
     public AdjustmentsViewModel Adjustments { get; }
-    public CarTemplateViewModel PrimaryTemplate { get; }
-    public CarTemplateViewModel SecondaryTemplate { get; }
+    public ObservableCollection<CarTemplateViewModel> ReferenceTemplates { get; } = new();
 
     internal void ToggleDescriptionVisibility()
         => IsDescriptionVisible = !IsDescriptionVisible;
@@ -313,8 +313,7 @@ public class MainViewModel : NotifyPropertyChangedBase
             carInfos,
             Adjustments.WeightRatio / 100M,
             new DrivetrainFactors(Adjustments.Fwd / 100M, Adjustments.Rwd / 100M, Adjustments.Awd / 100M),
-            PrimaryTemplate.ToCalculationCar(),
-            SecondaryTemplate.ToCalculationCar());
+            ReferenceTemplates.Select(t => t.ToCalculationCar()));
     }
 
     internal void ReCalculate()

@@ -110,8 +110,7 @@ public static class CalculationUtility
         }
 
         var ffbSensCalcParams = new FfbSensCalculationParameters(
-            carA,
-            carB,
+            referenceCars,
             drivetrainFactors);
 
         return cars
