@@ -6,82 +6,56 @@ public static class CalculationUtility
     {
         private readonly struct Parameters
         {
-            public Parameters(
-                decimal? ffbSensA,
-                decimal? ffbSensB,
-                decimal valueA,
-                decimal valueB,
-                decimal drivetrainFactorA,
-                decimal drivetrainFactorB)
-            {
-                ffbSensA /= drivetrainFactorA;
-                ffbSensB /= drivetrainFactorB;
+            private readonly List<(decimal value, decimal? ffbSens)> _referencePoints;
 
-                Factor = valueA == valueB
-                    ? 1M
-                    : (ffbSensA - ffbSensB) / (valueA - valueB);
-                Offset = ffbSensA - valueA * Factor;
+            public Parameters(IEnumerable<(decimal? ffbSens, decimal value, decimal drivetrainFactor)> references)
+            {
+                _referencePoints = references
+                    .Where(r => r.ffbSens.HasValue)
+                    .Select(r => (r.value, (decimal?)r.ffbSens.Value / r.drivetrainFactor))
+                    .OrderBy(p => p.value)
+                    .ToList();
             }
 
-            public decimal? Factor { get; }
-            public decimal? Offset { get; }
-
-
             public int? Calculate(decimal value)
-                => Factor.HasValue && Offset.HasValue
-                    ? Convert.ToInt32(value * Factor + Offset)
-                    : null;
+            {
+                if (_referencePoints.Count == 0)
+                    return null;
+                if (_referencePoints.Count == 1)
+                    return Convert.ToInt32(_referencePoints[0].ffbSens!.Value);
+
+                var lower = _referencePoints.Where(p => p.value <= value).MaxBy(p => p.value);
+                var upper = _referencePoints.Where(p => p.value >= value).MinBy(p => p.value);
+
+                if (lower.value == upper.value)
+                    return Convert.ToInt32(lower.ffbSens!.Value);
+
+                decimal factor = (value - lower.value) / (upper.value - lower.value);
+                decimal interpolated = lower.ffbSens!.Value + (upper.ffbSens!.Value - lower.ffbSens.Value) * factor;
+                return Convert.ToInt32(interpolated);
+            }
         }
 
         public FfbSensCalculationParameters(
-            CalculationCar carA,
-            CalculationCar carB,
+            IEnumerable<CalculationCar> cars,
             DrivetrainFactors drivetrainFactors)
         {
-            decimal drivetrainA = drivetrainFactors[carA.Drivetrain];
-            decimal drivetrainB = drivetrainFactors[carB.Drivetrain];
+            var references = cars.Select(car => 
+                (car, drivetrainFactor: drivetrainFactors[car.Drivetrain])).ToList();
+
             ParametersLockToLockRotationGravel = new Parameters(
-                carA.FfbSens.Gravel,
-                carB.FfbSens.Gravel,
-                carA.MaxSteeringLock,
-                carB.MaxSteeringLock,
-                drivetrainA,
-                drivetrainB);
+                references.Select(r => (r.car.FfbSens.Gravel, (decimal)r.car.MaxSteeringLock, r.drivetrainFactor)));
             ParametersLockToLockRotationTarmac = new Parameters(
-                carA.FfbSens.Tarmac,
-                carB.FfbSens.Tarmac,
-                carA.MaxSteeringLock,
-                carB.MaxSteeringLock,
-                drivetrainA,
-                drivetrainB);
+                references.Select(r => (r.car.FfbSens.Tarmac, (decimal)r.car.MaxSteeringLock, r.drivetrainFactor)));
             ParametersLockToLockRotationSnow = new Parameters(
-                carA.FfbSens.Snow,
-                carB.FfbSens.Snow,
-                carA.MaxSteeringLock,
-                carB.MaxSteeringLock,
-                drivetrainA,
-                drivetrainB);
+                references.Select(r => (r.car.FfbSens.Snow, (decimal)r.car.MaxSteeringLock, r.drivetrainFactor)));
+            
             ParametersWeightKgGravel = new Parameters(
-                carA.FfbSens.Gravel,
-                carB.FfbSens.Gravel,
-                carA.WeightKg,
-                carB.WeightKg,
-                drivetrainA,
-                drivetrainB);
+                references.Select(r => (r.car.FfbSens.Gravel, (decimal)r.car.WeightKg, r.drivetrainFactor)));
             ParametersWeightKgTarmac = new Parameters(
-                carA.FfbSens.Tarmac,
-                carB.FfbSens.Tarmac,
-                carA.WeightKg,
-                carB.WeightKg,
-                drivetrainA,
-                drivetrainB);
+                references.Select(r => (r.car.FfbSens.Tarmac, (decimal)r.car.WeightKg, r.drivetrainFactor)));
             ParametersWeightKgSnow = new Parameters(
-                carA.FfbSens.Snow,
-                carB.FfbSens.Snow,
-                carA.WeightKg,
-                carB.WeightKg,
-                drivetrainA,
-                drivetrainB);
+                references.Select(r => (r.car.FfbSens.Snow, (decimal)r.car.WeightKg, r.drivetrainFactor)));
         }
 
         private Parameters ParametersLockToLockRotationGravel { get; }
@@ -128,8 +102,7 @@ public static class CalculationUtility
         IEnumerable<CarInfo> cars,
         decimal weightRatio,
         DrivetrainFactors drivetrainFactors,
-        CalculationCar carA,
-        CalculationCar carB)
+        IEnumerable<CalculationCar> referenceCars)
     {
         if (weightRatio < 0 || weightRatio > 1)
         {
